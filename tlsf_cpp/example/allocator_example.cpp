@@ -67,9 +67,9 @@ int main(int argc, char ** argv)
   // Create a custom allocator and pass the allocator to the publisher and subscriber.
   auto alloc = std::make_shared<TLSFAllocator<void>>();
   auto publisher = node->create_publisher<std_msgs::msg::UInt32>("allocator_example", 10, alloc);
-  auto msg_mem_strat =
-    std::make_shared<rclcpp::message_memory_strategy::MessageMemoryStrategy<std_msgs::msg::UInt32,
-    TLSFAllocator<void>>>(alloc);
+  auto msg_mem_strat = std::make_shared<
+    rclcpp::message_memory_strategy::MessageMemoryStrategy<
+      std_msgs::msg::UInt32, TLSFAllocator<void>>>(alloc);
   auto subscriber = node->create_subscription<std_msgs::msg::UInt32>(
     "allocator_example", 10, callback, nullptr, false, msg_mem_strat, alloc);
 
@@ -89,7 +89,7 @@ int main(int argc, char ** argv)
   // message on the execution path, it will use the custom deallocate.
   auto msg = std::allocate_shared<std_msgs::msg::UInt32>(*alloc.get());
 
-  rclcpp::utilities::sleep_for(std::chrono::milliseconds(1));
+  rclcpp::sleep_for(std::chrono::milliseconds(1));
 
 
   uint32_t i = 0;
@@ -97,7 +97,7 @@ int main(int argc, char ** argv)
     msg->data = i;
     ++i;
     publisher->publish(msg);
-    rclcpp::utilities::sleep_for(std::chrono::milliseconds(1));
+    rclcpp::sleep_for(std::chrono::milliseconds(1));
     executor.spin_some();
   }
 }
