@@ -1,0 +1,12 @@
+Source: ros-ardent-tlsf-cpp
+Section: misc
+Priority: extra
+Maintainer: Jackie Kay <jackie@osrfoundation.org>
+Build-Depends: debhelper (>= 9.0.0), ros-ardent-ament-cmake, ros-ardent-ament-cmake-gtest, ros-ardent-ament-lint-auto, ros-ardent-ament-lint-common, ros-ardent-rclcpp, ros-ardent-rmw, ros-ardent-rmw-implementation-cmake, ros-ardent-std-msgs, ros-ardent-tlsf, ros-ardent-ros-workspace
+Homepage: 
+Standards-Version: 3.9.2
+
+Package: ros-ardent-tlsf-cpp
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, ros-ardent-ament-cmake, ros-ardent-rclcpp, ros-ardent-rmw, ros-ardent-std-msgs, ros-ardent-tlsf, ros-ardent-ros-workspace
+Description: C++ stdlib-compatible wrapper around tlsf allocator and ROS2 examples
