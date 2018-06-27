@@ -38,9 +38,9 @@
 
 
 // TODO(jacquelinekay) improve this ignore rule (dogfooding or no allocations)
-static const size_t num_rmw_tokens = 6;
+static const size_t num_rmw_tokens = 7;
 static const char * rmw_tokens[num_rmw_tokens] = {
-  "librmw", "dds", "DDS", "dcps", "DCPS", "fastrtps"
+  "librmw", "dds", "DDS", "dcps", "DCPS", "fastrtps", "opensplice"
 };
 
 static const size_t iterations = 1;
@@ -286,7 +286,11 @@ protected:
     context->get_sub_context<rclcpp::intra_process_manager::IntraProcessManager>(
       intra_process_manager_state);
 
-    node_ = rclcpp::Node::make_shared(name, "", context, intra_process);
+    const std::vector<std::string> arguments = {};
+    const std::vector<rclcpp::Parameter> initial_values = {};
+    const bool use_global_arguments = true;
+    node_ = rclcpp::Node::make_shared(
+      name, "", context, arguments, initial_values, use_global_arguments, intra_process);
     alloc = std::make_shared<TLSFAllocator<void>>();
     msg_memory_strategy_ = std::make_shared<
       rclcpp::message_memory_strategy::MessageMemoryStrategy<
@@ -309,6 +313,33 @@ protected:
   }
 };
 
+TEST_F(CLASSNAME(AllocatorTest, RMW_IMPLEMENTATION), type_traits_test) {
+  using UInt32TLSFAllocator = TLSFAllocator<std_msgs::msg::UInt32>;
+  using UInt32TLSFDeleter = rclcpp::allocator::Deleter<UInt32TLSFAllocator, std_msgs::msg::UInt32>;
+
+  auto cb_tlsf = [](std_msgs::msg::UInt32::UniquePtrWithDeleter<UInt32TLSFDeleter> msg) -> void
+    {
+      (void) msg;
+    };
+  static_assert(
+    std::is_same<
+      std_msgs::msg::UInt32,
+      rclcpp::subscription_traits::has_message_type<decltype(cb_tlsf)>::type>::value,
+    "tlsf unique ptr failed");
+
+  using UInt32VoidAllocator = std::allocator<std_msgs::msg::UInt32>;
+  using UInt32VoidDeleter = rclcpp::allocator::Deleter<UInt32VoidAllocator, std_msgs::msg::UInt32>;
+
+  auto cb_void = [](std_msgs::msg::UInt32::UniquePtrWithDeleter<UInt32VoidDeleter> msg) -> void
+    {
+      (void) msg;
+    };
+  static_assert(
+    std::is_same<
+      std_msgs::msg::UInt32,
+      rclcpp::subscription_traits::has_message_type<decltype(cb_void)>::type>::value,
+    "void unique ptr failed");
+}
 
 TEST_F(CLASSNAME(AllocatorTest, RMW_IMPLEMENTATION), allocator_shared_ptr) {
   initialize(false, "allocator_shared_ptr");
@@ -319,8 +350,10 @@ TEST_F(CLASSNAME(AllocatorTest, RMW_IMPLEMENTATION), allocator_shared_ptr) {
       counter++;
     };
 
+  rclcpp::subscription_traits::has_message_type<decltype(callback)>::type a;
   auto subscriber = node_->create_subscription<std_msgs::msg::UInt32>(
-    "allocator_shared_ptr", 10, callback, nullptr, false, msg_memory_strategy_, alloc);
+    "allocator_shared_ptr", callback, rmw_qos_profile_default, nullptr, false, msg_memory_strategy_,
+    alloc);
   // Create msg to be published
   auto msg = std::allocate_shared<std_msgs::msg::UInt32>(*alloc.get());
 
@@ -342,14 +375,20 @@ TEST_F(CLASSNAME(AllocatorTest, RMW_IMPLEMENTATION), allocator_unique_ptr) {
   initialize(true, "allocator_unique_ptr");
   size_t counter = 0;
   auto callback =
-    [&counter](std_msgs::msg::UInt32::UniquePtrWithDeleter<UInt32Deleter> msg) -> void
+    [&counter](std::unique_ptr<std_msgs::msg::UInt32, UInt32Deleter> msg) -> void
     {
       EXPECT_EQ(counter, msg->data);
       counter++;
     };
 
+  static_assert(
+    std::is_same<
+      std_msgs::msg::UInt32,
+      rclcpp::subscription_traits::has_message_type<decltype(callback)>::type>::value,
+    "passing a std::unique_ptr of test_msgs::msg::Empty has message type Empty");
+
   auto subscriber = node_->create_subscription<std_msgs::msg::UInt32>(
-    "allocator_unique_ptr", 10, callback, nullptr, false, msg_memory_strategy_, alloc);
+    "allocator_unique_ptr", callback, 10, nullptr, false, msg_memory_strategy_, alloc);
 
   TLSFAllocator<std_msgs::msg::UInt32> msg_alloc;
 
