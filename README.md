@@ -1,3 +1,28 @@
+## realtime_support (dashing) - 0.7.0-1
+
+The packages in the `realtime_support` repository were released into the `dashing` distro by running `/usr/bin/bloom-release -n -r dashing realtime_support --override-release-repository-push-url git@github.com:ros2-gbp/realtime_support-release` on `Mon, 15 Apr 2019 01:53:45 -0000`
+
+These packages were released:
+- `rttest`
+- `tlsf_cpp`
+
+Version of package(s) in repository `realtime_support`:
+
+- upstream repository: https://github.com/ros2/realtime_support.git
+- release repository: unknown
+- rosdistro version: `null`
+- old version: `null`
+- new version: `0.7.0-1`
+
+Versions of tools used:
+
+- bloom version: `0.8.0`
+- catkin_pkg version: `0.4.11`
+- rosdep version: `0.15.1`
+- rosdistro version: `0.7.3`
+- vcstools version: `0.1.40`
+
+
 ## realtime_support (crystal) - 0.6.0-0
 
 The packages in the `realtime_support` repository were released into the `crystal` distro by running `/usr/bin/bloom-release -n -r crystal realtime_support --override-release-repository-push-url git@github.com:ros2-gbp/realtime_support-release` on `Tue, 20 Nov 2018 15:37:26 -0000`
