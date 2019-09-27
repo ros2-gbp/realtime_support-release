@@ -1,3 +1,28 @@
+## realtime_support (eloquent) - 0.8.0-1
+
+The packages in the `realtime_support` repository were released into the `eloquent` distro by running `/home/jacob/.local/bin/bloom-release -r eloquent -t eloquent realtime_support` on `Fri, 27 Sep 2019 00:51:59 -0000`
+
+These packages were released:
+- `rttest`
+- `tlsf_cpp`
+
+Version of package(s) in repository `realtime_support`:
+
+- upstream repository: https://github.com/ros2/realtime_support.git
+- release repository: unknown
+- rosdistro version: `null`
+- old version: `null`
+- new version: `0.8.0-1`
+
+Versions of tools used:
+
+- bloom version: `0.8.0`
+- catkin_pkg version: `0.4.13`
+- rosdep version: `0.16.1`
+- rosdistro version: `0.7.4`
+- vcstools version: `0.1.42`
+
+
 ## realtime_support (dashing) - 0.7.1-1
 
 The packages in the `realtime_support` repository were released into the `dashing` distro by running `/home/jacob/.local/bin/bloom-release -r dashing realtime_support` on `Thu, 09 May 2019 00:51:19 -0000`
