@@ -159,8 +159,9 @@ bool check_stacktrace(const char ** tokens, size_t num_tokens, size_t max_frames
       if (status == 0) {
         funcname = ret;  // use possibly realloc()-ed string
         for (size_t j = 0; j < num_tokens; ++j) {
-          if (strstr(symbollist[i],
-            tokens[j]) != nullptr || strstr(funcname, tokens[j]) != nullptr)
+          if (
+            strstr(symbollist[i], tokens[j]) != nullptr ||
+            strstr(funcname, tokens[j]) != nullptr)
           {
             match = true;
             break;
@@ -173,8 +174,9 @@ bool check_stacktrace(const char ** tokens, size_t num_tokens, size_t max_frames
         // demangling failed. Output function name as a C function with
         // no arguments.
         for (size_t j = 0; j < num_tokens; j++) {
-          if (strstr(symbollist[i],
-            tokens[j]) != nullptr || strstr(begin_name, tokens[j]) != nullptr)
+          if (
+            strstr(symbollist[i], tokens[j]) != nullptr ||
+            strstr(begin_name, tokens[j]) != nullptr)
           {
             match = true;
             break;
@@ -287,7 +289,7 @@ protected:
     test_name_ = name;
     intra_process_ = intra_process;
 
-    auto context = rclcpp::contexts::default_context::get_global_default_context();
+    auto context = rclcpp::contexts::get_global_default_context();
     auto options = rclcpp::NodeOptions()
       .context(context)
       .use_global_arguments(true)
@@ -304,9 +306,9 @@ protected:
     memory_strategy_ =
       std::make_shared<AllocatorMemoryStrategy<TLSFAllocator<void>>>(alloc);
 
-    rclcpp::executor::ExecutorArgs args;
-    args.memory_strategy = memory_strategy_;
-    executor_ = std::make_shared<rclcpp::executors::SingleThreadedExecutor>(args);
+    rclcpp::ExecutorOptions executor_options;
+    executor_options.memory_strategy = memory_strategy_;
+    executor_ = std::make_shared<rclcpp::executors::SingleThreadedExecutor>(executor_options);
 
     executor_->add_node(node_);
   }

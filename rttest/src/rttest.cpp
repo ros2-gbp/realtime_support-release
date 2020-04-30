@@ -64,8 +64,7 @@ public:
         fprintf(stderr, "Failed to allocate latency samples buffer\n");
         exit(-1);
       }
-      memset(this->latency_samples, 0,
-        new_buffer_size * sizeof(int64_t));
+      memset(this->latency_samples, 0, new_buffer_size * sizeof(int64_t));
 
       this->major_pagefaults = static_cast<size_t *>(
         std::malloc(new_buffer_size * sizeof(size_t)));
@@ -73,8 +72,7 @@ public:
         fprintf(stderr, "Failed to allocate major pagefaults buffer\n");
         exit(-1);
       }
-      memset(this->major_pagefaults, 0,
-        new_buffer_size * sizeof(size_t));
+      memset(this->major_pagefaults, 0, new_buffer_size * sizeof(size_t));
 
       this->minor_pagefaults = static_cast<size_t *>(
         std::malloc(new_buffer_size * sizeof(size_t)));
@@ -82,8 +80,7 @@ public:
         fprintf(stderr, "Failed to allocate minor pagefaults buffer\n");
         exit(-1);
       }
-      memset(this->minor_pagefaults, 0,
-        new_buffer_size * sizeof(size_t));
+      memset(this->minor_pagefaults, 0, new_buffer_size * sizeof(size_t));
     } else {
       if (this->latency_samples) {
         free(this->latency_samples);
@@ -151,7 +148,7 @@ public:
   int init(
     size_t iterations, struct timespec update_period,
     size_t sched_policy, int sched_priority, size_t stack_size,
-    char * filename);
+    uint64_t prefault_dynamic_size, char * filename);
 
   int spin(void *(*user_function)(void *), void * args);
 
@@ -257,6 +254,26 @@ Rttest * get_rttest_thread_instance(pthread_t thread_id)
   return &rttest_instance_map[thread_id];
 }
 
+uint64_t rttest_parse_size_units(char * optarg)
+{
+  uint64_t ret;
+
+  std::string input(optarg);
+  std::vector<std::string> tokens = {"gb", "mb", "kb", "b"};
+  for (size_t i = 0; i < 4; ++i) {
+    size_t idx = input.find(tokens[i]);
+    if (idx != std::string::npos) {
+      ret = std::stoll(input.substr(0, idx)) * pow(2, (3 - i) * 10);
+      break;
+    }
+    if (i == 3) {
+      // Default units are megabytes
+      ret = std::stoll(input) * pow(2, 20);
+    }
+  }
+  return ret;
+}
+
 int Rttest::read_args(int argc, char ** argv)
 {
   // -i,--iterations
@@ -271,13 +288,15 @@ int Rttest::read_args(int argc, char ** argv)
   size_t sched_policy = SCHED_RR;
   // -m,--memory-size
   size_t stack_size = 1024 * 1024;
+  // -d,--prefault-dynamic-memory-size
+  uint64_t prefault_dynamic_size = 8589934592UL;  // 8GB
   // -f,--filename
   // Don't write a file unless filename specified
   char * filename = nullptr;
   int index;
   int c;
 
-  std::string args_string = "i:u:p:t:s:m:f:r:";
+  std::string args_string = "i:u:p:t:s:m:d:f:r:";
   opterr = 0;
   optind = 1;
 
@@ -325,7 +344,8 @@ int Rttest::read_args(int argc, char ** argv)
           } else if (input == "rr") {
             sched_policy = SCHED_RR;
           } else {
-            fprintf(stderr, "Invalid option entered for scheduling policy: %s\n",
+            fprintf(
+              stderr, "Invalid option entered for scheduling policy: %s\n",
               input.c_str());
             fprintf(stderr, "Valid options are: fifo, rr\n");
             exit(-1);
@@ -333,22 +353,10 @@ int Rttest::read_args(int argc, char ** argv)
         }
         break;
       case 'm':
-        {
-          // parse units
-          std::string input(optarg);
-          std::vector<std::string> tokens = {"b", "kb", "mb", "gb"};
-          for (size_t i = 0; i < 4; ++i) {
-            size_t idx = input.find(tokens[i]);
-            if (idx != std::string::npos) {
-              stack_size = stoi(input.substr(0, idx)) * pow(2, i * 10);
-              break;
-            }
-            if (i == 3) {
-              // Default units are megabytes
-              stack_size = std::stoi(input) * pow(2, 20);
-            }
-          }
-        }
+        stack_size = rttest_parse_size_units(optarg);
+        break;
+      case 'd':
+        prefault_dynamic_size = rttest_parse_size_units(optarg);
         break;
       case 'f':
         filename = optarg;
@@ -368,7 +376,8 @@ int Rttest::read_args(int argc, char ** argv)
   }
 
   return this->init(
-    iterations, update_period, sched_policy, sched_priority, stack_size, filename);
+    iterations, update_period, sched_policy, sched_priority,
+    stack_size, prefault_dynamic_size, filename);
 }
 
 int rttest_get_params(struct rttest_params * params_in)
@@ -426,13 +435,14 @@ int rttest_read_args(int argc, char ** argv)
 int Rttest::init(
   size_t iterations, struct timespec update_period,
   size_t sched_policy, int sched_priority, size_t stack_size,
-  char * filename)
+  uint64_t prefault_dynamic_size, char * filename)
 {
   this->params.iterations = iterations;
   this->params.update_period = update_period;
   this->params.sched_policy = sched_policy;
   this->params.sched_priority = sched_priority;
   this->params.stack_size = stack_size;
+  this->params.prefault_dynamic_size = prefault_dynamic_size;
 
   if (filename != nullptr) {
     size_t n = strlen(filename);
@@ -466,7 +476,7 @@ void Rttest::initialize_dynamic_memory()
 int rttest_init(
   size_t iterations, struct timespec update_period,
   size_t sched_policy, int sched_priority, size_t stack_size,
-  char * filename)
+  uint64_t prefault_dynamic_size, char * filename)
 {
   auto thread_id = pthread_self();
   auto thread_rttest_instance = get_rttest_thread_instance(thread_id);
@@ -480,8 +490,9 @@ int rttest_init(
     }
     thread_rttest_instance = &rttest_instance_map[thread_id];
   }
-  return thread_rttest_instance->init(iterations, update_period,
-           sched_policy, sched_priority, stack_size, filename);
+  return thread_rttest_instance->init(
+    iterations, update_period, sched_policy, sched_priority, stack_size,
+    prefault_dynamic_size, filename);
 }
 
 int Rttest::get_next_rusage(size_t i)
@@ -546,8 +557,8 @@ int rttest_spin_once(
 
 int Rttest::spin(void *(*user_function)(void *), void * args)
 {
-  return rttest_spin_period(user_function, args, &this->params.update_period,
-           this->params.iterations);
+  return rttest_spin_period(
+    user_function, args, &this->params.update_period, this->params.iterations);
 }
 
 int Rttest::spin_period(
@@ -671,17 +682,24 @@ int Rttest::lock_and_prefault_dynamic()
   struct rusage usage;
   size_t page_size = sysconf(_SC_PAGESIZE);
   getrusage(RUSAGE_SELF, &usage);
-  std::vector<char *> prefaulter;
   size_t prev_minflts = usage.ru_minflt;
   size_t prev_majflts = usage.ru_majflt;
   size_t encountered_minflts = 1;
   size_t encountered_majflts = 1;
+
+  size_t array_size = sizeof(char) * 64 * page_size;
+  size_t total_size = 0;
+  uint64_t max_size = this->params.prefault_dynamic_size;
+  std::vector<char *> prefaulter;
+  prefaulter.reserve(static_cast<size_t>(max_size / array_size));
+
   // prefault until you see no more pagefaults
   while (encountered_minflts > 0 || encountered_majflts > 0) {
     char * ptr;
     try {
-      ptr = new char[64 * page_size];
-      memset(ptr, 0, 64 * page_size);
+      ptr = new char[array_size];
+      memset(ptr, 0, array_size);
+      total_size += array_size;
     } catch (std::bad_alloc & e) {
       fprintf(stderr, "Caught exception: %s\n", e.what());
       fprintf(stderr, "Unlocking memory and continuing.\n");
@@ -694,7 +712,15 @@ int Rttest::lock_and_prefault_dynamic()
       munlockall();
       return -1;
     }
-    prefaulter.push_back(ptr);
+
+    // If we reached max_size then delete created char array.
+    // This will prevent pagefault on next allocation.
+    if (total_size >= max_size) {
+      delete[] ptr;
+    } else {
+      prefaulter.push_back(ptr);
+    }
+
     getrusage(RUSAGE_SELF, &usage);
     size_t current_minflt = usage.ru_minflt;
     size_t current_majflt = usage.ru_majflt;
@@ -798,31 +824,36 @@ int Rttest::calculate_statistics(struct rttest_results * output)
   }
 
   std::vector<int64_t> latency_dataset;
-  latency_dataset.assign(this->sample_buffer.latency_samples,
+  latency_dataset.assign(
+    this->sample_buffer.latency_samples,
     this->sample_buffer.latency_samples + this->sample_buffer.buffer_size);
 
-  output->min_latency = *std::min_element(latency_dataset.begin(),
-      latency_dataset.end());
-  output->max_latency = *std::max_element(latency_dataset.begin(),
-      latency_dataset.end());
-  output->mean_latency = std::accumulate(latency_dataset.begin(),
-      latency_dataset.end(), 0.0) / latency_dataset.size();
+  output->min_latency = *std::min_element(
+    latency_dataset.begin(), latency_dataset.end());
+  output->max_latency = *std::max_element(
+    latency_dataset.begin(), latency_dataset.end());
+  output->mean_latency = std::accumulate(
+    latency_dataset.begin(),
+    latency_dataset.end(), 0.0) / latency_dataset.size();
 
   // Calculate standard deviation and try to avoid overflow
   std::vector<int64_t> latency_diff(latency_dataset.size());
-  std::transform(latency_dataset.begin(), latency_dataset.end(), latency_diff.begin(),
-    std::bind2nd(std::minus<int>(), output->mean_latency));
-  int64_t sq_sum = std::inner_product(latency_diff.begin(), latency_diff.end(),
-      latency_diff.begin(), 0);
+  std::transform(
+    latency_dataset.begin(), latency_dataset.end(), latency_diff.begin(),
+    std::bind(std::minus<int>(), std::placeholders::_1, output->mean_latency));
+  int64_t sq_sum = std::inner_product(
+    latency_diff.begin(), latency_diff.end(), latency_diff.begin(), 0);
   output->latency_stddev = std::sqrt(sq_sum / latency_dataset.size());
 
   std::vector<size_t> min_pagefaults;
-  min_pagefaults.assign(this->sample_buffer.minor_pagefaults,
+  min_pagefaults.assign(
+    this->sample_buffer.minor_pagefaults,
     this->sample_buffer.minor_pagefaults + this->sample_buffer.buffer_size);
   output->minor_pagefaults = std::accumulate(min_pagefaults.begin(), min_pagefaults.end(), 0);
 
   std::vector<size_t> maj_pagefaults;
-  maj_pagefaults.assign(this->sample_buffer.major_pagefaults,
+  maj_pagefaults.assign(
+    this->sample_buffer.major_pagefaults,
     this->sample_buffer.major_pagefaults + this->sample_buffer.buffer_size);
   output->major_pagefaults = std::accumulate(maj_pagefaults.begin(), maj_pagefaults.end(), 0);
   return 0;
