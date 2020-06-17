@@ -2,6 +2,9 @@
 Changelog for package tlsf_cpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.10.0 (2020-06-17)
+-------------------
+
 0.9.0 (2020-04-30)
 ------------------
 * avoid new deprecations (`#92 <https://github.com/ros2/realtime_support/issues/92>`_)
