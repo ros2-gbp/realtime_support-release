@@ -1,0 +1,12 @@
+Source: ros-galactic-tlsf-cpp
+Section: misc
+Priority: optional
+Maintainer: Chris Lalancette <clalancette@openrobotics.org>
+Build-Depends: debhelper (>= 9.0.0), ros-galactic-ament-cmake, ros-galactic-ament-cmake-gtest, ros-galactic-ament-lint-auto, ros-galactic-ament-lint-common, ros-galactic-rclcpp, ros-galactic-rmw, ros-galactic-rmw-implementation-cmake, ros-galactic-std-msgs, ros-galactic-tlsf, ros-galactic-ros-workspace
+Homepage: 
+Standards-Version: 3.9.2
+
+Package: ros-galactic-tlsf-cpp
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, ros-galactic-ament-cmake, ros-galactic-rclcpp, ros-galactic-rmw, ros-galactic-std-msgs, ros-galactic-tlsf, ros-galactic-ros-workspace
+Description: C++ stdlib-compatible wrapper around tlsf allocator and ROS2 examples
