@@ -1,0 +1,12 @@
+Source: ros-rolling-tlsf-cpp
+Section: misc
+Priority: optional
+Maintainer: Chris Lalancette <clalancette@openrobotics.org>
+Build-Depends: debhelper (>= 9.0.0), ros-rolling-ament-cmake, ros-rolling-ament-cmake-gtest, ros-rolling-ament-lint-auto, ros-rolling-ament-lint-common, ros-rolling-rclcpp, ros-rolling-rmw, ros-rolling-rmw-implementation-cmake, ros-rolling-std-msgs, ros-rolling-tlsf, ros-rolling-ros-workspace
+Homepage: 
+Standards-Version: 3.9.2
+
+Package: ros-rolling-tlsf-cpp
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, ros-rolling-ament-cmake, ros-rolling-rclcpp, ros-rolling-rmw, ros-rolling-std-msgs, ros-rolling-tlsf, ros-rolling-ros-workspace
+Description: C++ stdlib-compatible wrapper around tlsf allocator and ROS2 examples
