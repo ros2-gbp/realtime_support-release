@@ -2,6 +2,11 @@
 Changelog for package tlsf_cpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.13.0 (2022-03-01)
+-------------------
+* Install includes to include/${PROJECT_NAME} (`#114 <https://github.com/ros2/realtime_support/issues/114>`_)
+* Contributors: Shane Loretz
+
 0.12.1 (2022-01-14)
 -------------------
 
