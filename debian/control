@@ -1,0 +1,12 @@
+Source: ros-humble-tlsf-cpp
+Section: misc
+Priority: optional
+Maintainer: Chris Lalancette <clalancette@openrobotics.org>
+Build-Depends: debhelper (>= 9.0.0), ros-humble-ament-cmake, ros-humble-ament-cmake-gtest <!nocheck>, ros-humble-ament-lint-auto <!nocheck>, ros-humble-ament-lint-common <!nocheck>, ros-humble-rclcpp, ros-humble-rmw, ros-humble-rmw-implementation-cmake <!nocheck>, ros-humble-std-msgs, ros-humble-tlsf, ros-humble-ros-workspace
+Homepage: 
+Standards-Version: 3.9.2
+
+Package: ros-humble-tlsf-cpp
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, ros-humble-ament-cmake, ros-humble-rclcpp, ros-humble-rmw, ros-humble-std-msgs, ros-humble-tlsf, ros-humble-ros-workspace
+Description: C++ stdlib-compatible wrapper around tlsf allocator and ROS2 examples
