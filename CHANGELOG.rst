@@ -2,6 +2,9 @@
 Changelog for package tlsf_cpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.18.2 (2024-11-25)
+-------------------
+
 0.18.1 (2024-07-29)
 -------------------
 * Reduce the number of files we compile. (`#125 <https://github.com/ros2/realtime_support/issues/125>`_)
