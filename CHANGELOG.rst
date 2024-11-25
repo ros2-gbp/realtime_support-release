@@ -2,6 +2,11 @@
 Changelog for package rttest
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.18.2 (2024-11-25)
+-------------------
+* Don't try to build on BSD (`#126 <https://github.com/ros2/realtime_support/issues/126>`_)
+* Contributors: Scott K Logan
+
 0.18.1 (2024-07-29)
 -------------------
 
