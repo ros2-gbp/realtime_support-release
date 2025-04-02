@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.5)
 
 project(rttest)
 
-if(WIN32 OR APPLE OR ANDROID OR BSD)
+if(WIN32 OR APPLE OR ANDROID)
   message(STATUS "rttest is only supported on Linux, skipping...")
   return()
 endif()
