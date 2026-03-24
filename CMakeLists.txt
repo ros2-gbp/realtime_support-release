@@ -15,7 +15,6 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra)
 endif()
 
-find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(rcpputils REQUIRED)
 find_package(rmw REQUIRED)
@@ -34,7 +33,7 @@ add_executable(tlsf_allocator_example
   example/allocator_example.cpp)
 target_link_libraries(tlsf_allocator_example PRIVATE
   rclcpp::rclcpp
-  ${std_msgs_TARGETS}
+  std_msgs::std_msgs
   tlsf_cpp
 )
 
@@ -50,20 +49,20 @@ if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
   ament_lint_auto_find_test_dependencies()
 
-  find_package(ament_cmake_gtest REQUIRED)
+  find_package(ament_cmake_ros REQUIRED)
 
   ament_add_gtest_executable(test_tlsf test/test_tlsf.cpp)
   if(TARGET test_tlsf${target_suffix})
     target_link_libraries(test_tlsf
       rclcpp::rclcpp
       rcpputils::rcpputils
-      ${std_msgs_TARGETS}
+      std_msgs::std_msgs
       tlsf_cpp
     )
   endif()
 
   function(add_gtest)
-    ament_add_gtest_test(test_tlsf
+    ament_add_ros_isolated_gtest_test(test_tlsf
       TEST_NAME test_tlsf${target_suffix}
       TIMEOUT 15
       ENV
