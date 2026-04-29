@@ -1,0 +1,12 @@
+Source: ros-lyrical-tlsf-cpp
+Section: misc
+Priority: optional
+Maintainer: Brandon Ong <brandon@openrobotics.org>
+Build-Depends: debhelper (>= 9.0.0), ros-lyrical-ament-cmake, ros-lyrical-ament-cmake-ros <!nocheck>, ros-lyrical-ament-lint-auto <!nocheck>, ros-lyrical-ament-lint-common <!nocheck>, ros-lyrical-rcl, ros-lyrical-rclcpp, ros-lyrical-rcpputils <!nocheck>, ros-lyrical-rmw, ros-lyrical-rmw-implementation-cmake <!nocheck>, ros-lyrical-std-msgs, ros-lyrical-tlsf, ros-lyrical-ros-workspace
+Homepage: https://index.ros.org/p/tlsf_cpp/#lyrical
+Standards-Version: 3.9.2
+
+Package: ros-lyrical-tlsf-cpp
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, ros-lyrical-rcl, ros-lyrical-rclcpp, ros-lyrical-rmw, ros-lyrical-std-msgs, ros-lyrical-tlsf, ros-lyrical-ros-workspace
+Description: C++ stdlib-compatible wrapper around tlsf allocator and ROS2 examples
