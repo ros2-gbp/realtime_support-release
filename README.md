@@ -1,3 +1,28 @@
+## realtime_support (rolling) - 1.0.0-1
+
+The packages in the `realtime_support` repository were released into the `rolling` distro by running `/usr/bin/bloom-release --rosdistro rolling --track rolling realtime_support` on `Wed, 06 May 2026 20:01:24 -0000`
+
+These packages were released:
+- `rttest`
+- `tlsf_cpp`
+
+Version of package(s) in repository `realtime_support`:
+
+- upstream repository: https://github.com/ros2/realtime_support.git
+- release repository: https://github.com/ros2-gbp/realtime_support-release.git
+- rosdistro version: `0.20.0-2`
+- old version: `0.20.0-2`
+- new version: `1.0.0-1`
+
+Versions of tools used:
+
+- bloom version: `0.14.3`
+- catkin_pkg version: `1.1.0`
+- rosdep version: `0.26.0`
+- rosdistro version: `1.0.1`
+- vcstools version: `0.1.42`
+
+
 ## realtime_support (rolling) - 0.20.0-1
 
 The packages in the `realtime_support` repository were released into the `rolling` distro by running `/usr/local/google/home/sloretz/projects/lyrical/env3/bin/bloom-release realtime_support -r rolling -t rolling` on `Mon, 20 Apr 2026 23:02:13 -0000`
