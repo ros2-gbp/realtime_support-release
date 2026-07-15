@@ -43,15 +43,12 @@ struct tlsf_heap_allocator
     initialize(DefaultPoolSize);
   }
 
-  // Needed for std::allocator_traits
-  template<typename U>
-  tlsf_heap_allocator(const tlsf_heap_allocator<U> & alloc)
-  : memory_pool(alloc.memory_pool), pool_size(alloc.pool_size)
-  {
-  }
-
-  template<typename U, size_t OtherDefaultSize>
-  tlsf_heap_allocator(const tlsf_heap_allocator<U> & alloc)
+  // Needed for std::allocator_traits.
+  // Converting constructor across both element type (U) and pool size
+  // (OtherPoolSize). Both template parameters are deduced from the argument,
+  // so this single overload covers every rebind/conversion case.
+  template<typename U, size_t OtherPoolSize>
+  tlsf_heap_allocator(const tlsf_heap_allocator<U, OtherPoolSize> & alloc)
   : memory_pool(alloc.memory_pool), pool_size(alloc.pool_size)
   {
   }
@@ -93,66 +90,44 @@ struct tlsf_heap_allocator
 
   rcl_allocator_t get_rcl_allocator()
   {
-    rcl_allocator_t allocator = rcl_get_default_allocator();
-    allocator.allocate = [](size_t size, void * state) -> void * {
-        return malloc_ex(size, state);
-      };
-    allocator.deallocate = [](void * ptr, void * state) {
-        free_ex(ptr, state);
-      };
-    allocator.reallocate = [](void * ptr, size_t size, void * state) -> void * {
-        return realloc_ex(ptr, size, state);
-      };
-    allocator.zero_allocate = [](size_t n, size_t size, void * state) -> void * {
-        return calloc_ex(n, size, state);
-      };
-    allocator.state = memory_pool;
-    return allocator;
+    // Designated initializers must follow rcl_allocator_t's declaration order:
+    // allocate, deallocate, reallocate, zero_allocate, state.
+    return rcl_allocator_t{
+      .allocate = [](size_t size, void * state) -> void * {
+          return malloc_ex(size, state);
+        },
+      .deallocate = [](void * ptr, void * state) {
+          free_ex(ptr, state);
+        },
+      .reallocate = [](void * ptr, size_t size, void * state) -> void * {
+          return realloc_ex(ptr, size, state);
+        },
+      .zero_allocate = [](size_t n, size_t size, void * state) -> void * {
+          return calloc_ex(n, size, state);
+        },
+      .state = memory_pool,
+    };
   }
 
   template<typename U>
   struct rebind
   {
-    typedef tlsf_heap_allocator<U> other;
+    using other = tlsf_heap_allocator<U>;
   };
 
   char * memory_pool;
   size_t pool_size;
 };
 
-// Needed for std::allocator_traits
-template<typename T, typename U>
-constexpr bool operator==(
-  const tlsf_heap_allocator<T> & a,
-  const tlsf_heap_allocator<U> & b) noexcept
-{
-  return a.memory_pool == b.memory_pool;
-}
-
-// Needed for std::allocator_traits
-template<typename T, typename U>
-constexpr bool operator!=(
-  const tlsf_heap_allocator<T> & a,
-  const tlsf_heap_allocator<U> & b) noexcept
-{
-  return a.memory_pool != b.memory_pool;
-}
-
-template<typename T, typename U, size_t X, size_t Y>
+// Needed for std::allocator_traits.
+// Single symmetric overload covering any element types and pool sizes;
+// C++20 synthesizes operator!= from this operator==.
+template<typename T, size_t X, typename U, size_t Y>
 constexpr bool operator==(
   const tlsf_heap_allocator<T, X> & a,
   const tlsf_heap_allocator<U, Y> & b) noexcept
 {
   return a.memory_pool == b.memory_pool;
-}
-
-// Needed for std::allocator_traits
-template<typename T, typename U, size_t X, size_t Y>
-constexpr bool operator!=(
-  const tlsf_heap_allocator<T, X> & a,
-  const tlsf_heap_allocator<U, Y> & b) noexcept
-{
-  return a.memory_pool != b.memory_pool;
 }
 
 

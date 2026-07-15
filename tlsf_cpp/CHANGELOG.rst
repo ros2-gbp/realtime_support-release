@@ -2,11 +2,20 @@
 Changelog for package tlsf_cpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.20.1 (2026-05-06)
--------------------
-* cleanups and removed dead code (`#141 <https://github.com/ros2/realtime_support/issues/141>`_) (`#144 <https://github.com/ros2/realtime_support/issues/144>`_)
-* fix: Removed AllocatorMemoryStrategy (backport `#140 <https://github.com/ros2/realtime_support/issues/140>`_) (`#142 <https://github.com/ros2/realtime_support/issues/142>`_)
-* Contributors: mergify[bot]
+1.0.1 (2026-07-15)
+------------------
+* replacing NULL with nullptr and atoi with from_chars (`#149 <https://github.com/ros2/realtime_support/issues/149>`_)
+* Modernize rttest and tlsf_cpp for C++20 (`#147 <https://github.com/ros2/realtime_support/issues/147>`_)
+* fixed page-fault accumulator and removed non-deducible converting constructor (`#146 <https://github.com/ros2/realtime_support/issues/146>`_)
+* Call rclcpp::shutdown at the end of the example. (`#145 <https://github.com/ros2/realtime_support/issues/145>`_)
+* Contributors: Alejandro Hernández Cordero, Chris Lalancette
+
+1.0.0 (2026-05-06)
+------------------
+* cleanups and removed dead code (`#141 <https://github.com/ros2/realtime_support/issues/141>`_)
+* fix: remove newly added overloads of AllocatorMemoryStrategy (`#143 <https://github.com/ros2/realtime_support/issues/143>`_)
+* fix: Removed AllocatorMemoryStrategy (`#140 <https://github.com/ros2/realtime_support/issues/140>`_)
+* Contributors: Alejandro Hernández Cordero, Janosch Machowinski
 
 0.20.0 (2026-04-20)
 -------------------
