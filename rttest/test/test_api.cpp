@@ -15,6 +15,7 @@
 #include <sys/resource.h>
 #include <string>
 
+#include <array>
 #include "gtest/gtest.h"
 
 #include "rttest/rttest.h"

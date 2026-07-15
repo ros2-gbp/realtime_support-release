@@ -2,29 +2,7 @@
 Changelog for package rttest
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-1.0.1 (2026-07-15)
-------------------
-* constrain calculate_stddev with std::ranges::input_range + std::is_arithmetic_v (`#150 <https://github.com/ros2/realtime_support/issues/150>`_)
-* replacing NULL with nullptr and atoi with from_chars (`#149 <https://github.com/ros2/realtime_support/issues/149>`_)
-* Modernize rttest and tlsf_cpp for C++20 part 2 (`#148 <https://github.com/ros2/realtime_support/issues/148>`_)
-* Modernize rttest and tlsf_cpp for C++20 (`#147 <https://github.com/ros2/realtime_support/issues/147>`_)
-* fixed page-fault accumulator and removed non-deducible converting constructor (`#146 <https://github.com/ros2/realtime_support/issues/146>`_)
-* Contributors: Alejandro Hernández Cordero
-
-1.0.0 (2026-05-06)
-------------------
-* cleanups and removed dead code (`#141 <https://github.com/ros2/realtime_support/issues/141>`_)
-* Contributors: Alejandro Hernández Cordero
-
-0.19.2 (2026-03-24)
--------------------
-
-0.19.1 (2025-07-29)
--------------------
-* Fix cmake deprecation (`#134 <https://github.com/ros2/realtime_support/issues/134>`_)
-* Contributors: mosfet80
-
-0.19.0 (2025-04-25)
+0.18.4 (2025-07-15)
 -------------------
 
 0.18.3 (2025-04-25)

@@ -2,42 +2,10 @@
 Changelog for package tlsf_cpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-1.0.1 (2026-07-15)
-------------------
-* replacing NULL with nullptr and atoi with from_chars (`#149 <https://github.com/ros2/realtime_support/issues/149>`_)
-* Modernize rttest and tlsf_cpp for C++20 (`#147 <https://github.com/ros2/realtime_support/issues/147>`_)
-* fixed page-fault accumulator and removed non-deducible converting constructor (`#146 <https://github.com/ros2/realtime_support/issues/146>`_)
-* Call rclcpp::shutdown at the end of the example. (`#145 <https://github.com/ros2/realtime_support/issues/145>`_)
-* Contributors: Alejandro Hernández Cordero, Chris Lalancette
-
-1.0.0 (2026-05-06)
-------------------
-* cleanups and removed dead code (`#141 <https://github.com/ros2/realtime_support/issues/141>`_)
-* fix: remove newly added overloads of AllocatorMemoryStrategy (`#143 <https://github.com/ros2/realtime_support/issues/143>`_)
-* fix: Removed AllocatorMemoryStrategy (`#140 <https://github.com/ros2/realtime_support/issues/140>`_)
-* Contributors: Alejandro Hernández Cordero, Janosch Machowinski
-
-0.20.0 (2026-04-20)
+0.18.4 (2025-07-15)
 -------------------
-
-* Remove deprecation warnings (`#139 <https://github.com/ros2/realtime_support/issues/139>`_)
-
-* Contributors: Alejandro Hernández Cordero
-
-0.19.2 (2026-03-24)
--------------------
-* Use new ROSIDL aggregate CMake target (`#137 <https://github.com/ros2/realtime_support/issues/137>`_)
-* tlsf_cpp: add test isolation (`#136 <https://github.com/ros2/realtime_support/issues/136>`_)
-* Update subscription callback signatures (`#135 <https://github.com/ros2/realtime_support/issues/135>`_)
-* Contributors: Emerson Knapp, Julien Enoch, mini-1235
-
-0.19.1 (2025-07-29)
--------------------
-* Fix cmake deprecation (`#134 <https://github.com/ros2/realtime_support/issues/134>`_)
-* Contributors: mosfet80
-
-0.19.0 (2025-04-25)
--------------------
+* tlsf_cpp: add test isolation (`#136 <https://github.com/ros2/realtime_support/issues/136>`_) (`#138 <https://github.com/ros2/realtime_support/issues/138>`_)
+* Contributors: mergify[bot]
 
 0.18.3 (2025-04-25)
 -------------------
