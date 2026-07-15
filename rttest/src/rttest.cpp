@@ -24,11 +24,12 @@
 
 #include <algorithm>
 #include <cassert>
+#include <charconv>
 #include <cmath>
+#include <format>  // NOLINT(build/include_order)
 #include <fstream>
 #include <map>
 #include <numeric>
-#include <sstream>
 #include <stdexcept>
 #include <string>
 #include <utility>
@@ -193,27 +194,29 @@ int Rttest::record_jitter(
 
 Rttest * get_rttest_thread_instance(pthread_t thread_id)
 {
-  if (rttest_instance_map.count(thread_id) == 0) {
-    return NULL;
+  auto it = rttest_instance_map.find(thread_id);
+  if (it == rttest_instance_map.end()) {
+    return nullptr;
   }
-  return &rttest_instance_map[thread_id];
+  return &it->second;
 }
 
 uint64_t rttest_parse_size_units(char * optarg)
 {
-  uint64_t ret;
+  uint64_t ret = 0;
 
   std::string input(optarg);
   std::vector<std::string> tokens = {"gb", "mb", "kb", "b"};
   for (size_t i = 0; i < 4; ++i) {
     size_t idx = input.find(tokens[i]);
     if (idx != std::string::npos) {
-      ret = std::stoll(input.substr(0, idx)) * std::pow(2, (3 - i) * 10);
+      // gb/mb/kb/b -> shift by 30/20/10/0 bits (exact, integer)
+      ret = std::stoull(input.substr(0, idx)) << ((3 - i) * 10);
       break;
     }
     if (i == 3) {
       // Default units are megabytes
-      ret = std::stoll(input) * std::pow(2, 20);
+      ret = std::stoull(input) << 20;
     }
   }
   return ret;
@@ -248,7 +251,8 @@ int Rttest::read_args(int argc, char ** argv)
     switch (c) {
       case 'i':
         {
-          int arg = atoi(optarg);
+          int arg = 0;
+          std::from_chars(optarg, optarg + strlen(optarg), arg);
           if (arg < 0) {
             iterations = 0;
           } else {
@@ -278,8 +282,12 @@ int Rttest::read_args(int argc, char ** argv)
         }
         break;
       case 't':
-        sched_priority = atoi(optarg);
-        break;
+        {
+          int prio = 0;
+          std::from_chars(optarg, optarg + strlen(optarg), prio);
+          sched_priority = prio;
+          break;
+        }
       case 's':
         {
           std::string input(optarg);
@@ -326,7 +334,7 @@ int Rttest::read_args(int argc, char ** argv)
 
 int rttest_get_params(struct rttest_params * params_in)
 {
-  if (params_in == NULL) {
+  if (params_in == nullptr) {
     return -1;
   }
 
@@ -352,7 +360,7 @@ int rttest_init_new_thread()
     fprintf(stderr, "rttest instance for %lu already exists!\n", thread_id);
     return -1;
   }
-  if (initial_thread_id == 0 || rttest_instance_map.count(initial_thread_id) == 0) {
+  if (initial_thread_id == 0 || !rttest_instance_map.contains(initial_thread_id)) {
     return -1;
   }
   rttest_instance_map[thread_id].set_params(
@@ -555,7 +563,7 @@ int Rttest::spin_once(
   struct timespec wakeup_time, current_time;
   multiply_timespec(update_period, i, &wakeup_time);
   add_timespecs(start_time, &wakeup_time, &wakeup_time);
-  clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME, &wakeup_time, NULL);
+  clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME, &wakeup_time, nullptr);
   clock_gettime(CLOCK_MONOTONIC, &current_time);
 
   this->record_jitter(&wakeup_time, &current_time, i);
@@ -749,7 +757,7 @@ int Rttest::accumulate_statistics(size_t iteration)
 
 int Rttest::calculate_statistics(struct rttest_results * output)
 {
-  if (output == NULL) {
+  if (output == nullptr) {
     fprintf(stderr, "Need to allocate rttest_results struct\n");
     return -1;
   }
@@ -767,11 +775,11 @@ int Rttest::calculate_statistics(struct rttest_results * output)
 
   output->minor_pagefaults = std::accumulate(
     this->sample_buffer.minor_pagefaults.begin(),
-    this->sample_buffer.minor_pagefaults.end(), 0);
+    this->sample_buffer.minor_pagefaults.end(), size_t{});
 
   output->major_pagefaults = std::accumulate(
     this->sample_buffer.major_pagefaults.begin(),
-    this->sample_buffer.major_pagefaults.end(), 0);
+    this->sample_buffer.major_pagefaults.end(), size_t{});
 
   return 0;
 }
@@ -787,7 +795,7 @@ int rttest_calculate_statistics(struct rttest_results * results)
 
 int rttest_get_statistics(struct rttest_results * output)
 {
-  if (output == NULL) {
+  if (output == nullptr) {
     return -1;
   }
 
@@ -824,7 +832,7 @@ int rttest_get_sample_at(const size_t iteration, int64_t * sample)
   if (!thread_rttest_instance) {
     return -1;
   }
-  if (sample == NULL) {
+  if (sample == nullptr) {
     return -1;
   }
   return thread_rttest_instance->get_sample_at(iteration, *sample);
@@ -832,24 +840,24 @@ int rttest_get_sample_at(const size_t iteration, int64_t * sample)
 
 std::string Rttest::results_to_string(char * name)
 {
-  std::stringstream sstring;
-
-  sstring << std::fixed << "rttest statistics";
-  if (name != NULL) {
-    sstring << " for " << name << ":" << std::endl;
-  } else {
-    sstring << ":" << std::endl;
-  }
-  sstring << "  - Minor pagefaults: " << results.minor_pagefaults << std::endl;
-  sstring << "  - Major pagefaults: " << results.major_pagefaults << std::endl;
-  sstring << "  Latency (time after deadline was missed):" << std::endl;
-  sstring << "    - Min: " << results.min_latency << " ns" << std::endl;
-  sstring << "    - Max: " << results.max_latency << " ns" << std::endl;
-  sstring << "    - Mean: " << results.mean_latency << " ns" << std::endl;
-  sstring << "    - Standard deviation: " << results.latency_stddev << std::endl;
-  sstring << std::endl;
-
-  return sstring.str();
+  // {:f} preserves the std::fixed (6 decimal places) formatting of the
+  // floating-point latency fields used by the previous stringstream version.
+  return std::format(
+    "rttest statistics{}:\n"
+    "  - Minor pagefaults: {}\n"
+    "  - Major pagefaults: {}\n"
+    "  Latency (time after deadline was missed):\n"
+    "    - Min: {} ns\n"
+    "    - Max: {} ns\n"
+    "    - Mean: {:f} ns\n"
+    "    - Standard deviation: {:f}\n\n",
+    name != nullptr ? std::format(" for {}", name) : std::string{},
+    results.minor_pagefaults,
+    results.major_pagefaults,
+    results.min_latency,
+    results.max_latency,
+    results.mean_latency,
+    results.latency_stddev);
 }
 
 int rttest_finish()
@@ -906,7 +914,7 @@ int Rttest::write_results_file(char * filename)
     fprintf(stderr, "No sample buffer was saved, not writing results\n");
     return -1;
   }
-  if (filename == NULL) {
+  if (filename == nullptr) {
     fprintf(stderr, "No results filename given, not writing results\n");
     return -1;
   }
