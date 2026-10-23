@@ -18,8 +18,18 @@
 #include <string>
 #include <type_traits>
 
-#include "rclcpp/strategies/allocator_memory_strategy.hpp"
-#include "rclcpp/rclcpp.hpp"
+#include "rclcpp/allocator/allocator_deleter.hpp"
+#include "rclcpp/contexts/default_context.hpp"
+#include "rclcpp/executor_options.hpp"
+#include "rclcpp/executors/single_threaded_executor.hpp"
+#include "rclcpp/message_memory_strategy.hpp"
+#include "rclcpp/node.hpp"
+#include "rclcpp/node_options.hpp"
+#include "rclcpp/publisher.hpp"
+#include "rclcpp/publisher_options.hpp"
+#include "rclcpp/subscription_options.hpp"
+#include "rclcpp/subscription_traits.hpp"
+#include "rclcpp/utilities.hpp"
 
 #include "rcpputils/scope_exit.hpp"
 
@@ -29,8 +39,6 @@
 template<typename T = void>
 using TLSFAllocator = tlsf_heap_allocator<T>;
 
-using rclcpp::memory_strategies::allocator_memory_strategy::AllocatorMemoryStrategy;
-
 class AllocatorTest : public ::testing::Test
 {
 protected:
@@ -38,7 +46,6 @@ protected:
 
   rclcpp::Node::SharedPtr node_;
   rclcpp::executors::SingleThreadedExecutor::SharedPtr executor_;
-  rclcpp::memory_strategy::MemoryStrategy::SharedPtr memory_strategy_;
   rclcpp::Publisher<
     std_msgs::msg::UInt32, TLSFAllocator<void>>::SharedPtr publisher_;
   rclcpp::message_memory_strategy::MessageMemoryStrategy<
@@ -71,11 +78,8 @@ protected:
       rclcpp::message_memory_strategy::MessageMemoryStrategy<
         std_msgs::msg::UInt32, TLSFAllocator<void>>>(alloc);
     publisher_ = node_->create_publisher<std_msgs::msg::UInt32>(name, 10, publisher_options_);
-    memory_strategy_ =
-      std::make_shared<AllocatorMemoryStrategy<TLSFAllocator<void>>>(alloc);
 
     rclcpp::ExecutorOptions executor_options;
-    executor_options.memory_strategy = memory_strategy_;
     executor_ = std::make_shared<rclcpp::executors::SingleThreadedExecutor>(executor_options);
 
     executor_->add_node(node_);

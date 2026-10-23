@@ -12,13 +12,25 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <chrono>
+#include <cstdint>
+#include <cstdio>
 #include <list>
 #include <memory>
 #include <string>
 #include <utility>
 
-#include "rclcpp/rclcpp.hpp"
-#include "rclcpp/strategies/allocator_memory_strategy.hpp"
+#include "rclcpp/allocator/allocator_common.hpp"
+#include "rclcpp/allocator/allocator_deleter.hpp"
+#include "rclcpp/executor_options.hpp"
+#include "rclcpp/executors/single_threaded_executor.hpp"
+#include "rclcpp/message_memory_strategy.hpp"
+#include "rclcpp/node.hpp"
+#include "rclcpp/node_options.hpp"
+#include "rclcpp/publisher_options.hpp"
+#include "rclcpp/subscription_options.hpp"
+#include "rclcpp/utilities.hpp"
+
 #include "std_msgs/msg/u_int32.hpp"
 #include "tlsf_cpp/tlsf.hpp"
 
@@ -27,7 +39,6 @@ using TLSFAllocator = tlsf_heap_allocator<T>;
 
 int main(int argc, char ** argv)
 {
-  using rclcpp::memory_strategies::allocator_memory_strategy::AllocatorMemoryStrategy;
   using Alloc = TLSFAllocator<void>;
   rclcpp::init(argc, argv);
 
@@ -62,7 +73,7 @@ int main(int argc, char ** argv)
   }
 
   uint32_t counter = 0;
-  auto callback = [&counter](std_msgs::msg::UInt32::SharedPtr msg) -> void
+  auto callback = [&counter](std_msgs::msg::UInt32::ConstSharedPtr msg) -> void
     {
       (void)msg;
       ++counter;
@@ -83,13 +94,7 @@ int main(int argc, char ** argv)
   auto subscriber = node->create_subscription<std_msgs::msg::UInt32>(
     "allocator_example", 10, callback, subscription_options, msg_mem_strat);
 
-  // Create a MemoryStrategy, which handles the allocations made by the Executor during the
-  // execution path, and inject the MemoryStrategy into the Executor.
-  std::shared_ptr<rclcpp::memory_strategy::MemoryStrategy> memory_strategy =
-    std::make_shared<AllocatorMemoryStrategy<Alloc>>(alloc);
-
   rclcpp::ExecutorOptions options;
-  options.memory_strategy = memory_strategy;
   rclcpp::executors::SingleThreadedExecutor executor(options);
 
   // Add our node to the executor.
@@ -106,7 +111,6 @@ int main(int argc, char ** argv)
 
   rclcpp::sleep_for(std::chrono::milliseconds(1));
 
-
   uint32_t i = 0;
   while (rclcpp::ok() && i < 100) {
     // Create a message with the custom allocator, so that when the Executor deallocates the
@@ -120,6 +124,8 @@ int main(int argc, char ** argv)
     rclcpp::sleep_for(std::chrono::milliseconds(1));
     executor.spin_some();
   }
+
+  rclcpp::shutdown();
 
   return 0;
 }
